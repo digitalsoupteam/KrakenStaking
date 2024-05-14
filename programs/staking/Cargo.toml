@@ -1,0 +1,22 @@
+[package]
+name = "staking"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "staking"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+#default = []
+#no-idl = []
+#no-log-ix-name = []
+
+[dependencies]
+anchor-lang = { version = "^0.30.0", features = ["init-if-needed"] }
+anchor-spl = { version = "^0.30.0", features = ["metadata"] }
+spl-token = { version = "^4", features = ["no-entrypoint"] }
