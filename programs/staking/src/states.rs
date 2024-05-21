@@ -75,3 +75,63 @@ impl VaultState {
         Ok(())
     }
 }
+
+#[account]
+#[derive(Default, Debug)]
+pub struct UserConfigState {
+    pub magic: u32,
+    pub last_lock_id: u32,
+}
+
+impl UserConfigState {
+    pub const MAGIC: u32 = 0xc0febabe;
+    pub const SEED: &'static [u8] = b"user_config";
+    pub const MAX_SIZE: usize = 4 // magic
+        + 4 // last_id
+    ;
+
+    pub fn default() -> Self {
+        Self {
+            magic: UserConfigState::MAGIC,
+            last_lock_id: 0,
+        }
+    }
+}
+
+#[account]
+#[derive(Default, Debug)]
+pub struct LockState {
+    pub magic: u32,
+    pub id: u32,
+    pub vault: Pubkey,
+    pub staker: Pubkey,
+    pub amount: u64,
+    pub locked_for: u32,
+    pub locked_at: u32,
+}
+
+impl LockState {
+    pub const MAGIC : u32 = 0x1337c0fe;
+    pub const SEED: &'static [u8] = b"lock";
+    pub const MAX_SIZE: usize = 4 // magic
+        + 4 // id
+        + 32 // vault
+        + 32 // staker
+        + 8 // amount
+        + 4 // locked_for
+        + 4 // locked_at
+    ;
+
+    pub fn default() -> Self {
+        Self {
+            magic: LockState::MAGIC,
+            id: 0,
+            vault: Pubkey::default(),
+            staker: Pubkey::default(),
+            amount: 0,
+            locked_for: 0,
+            locked_at: 0,
+        }
+    }
+}
+

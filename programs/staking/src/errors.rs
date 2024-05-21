@@ -4,6 +4,12 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Not admin")]
     NotAdmin,
+    #[msg("Vault is paused")]
+    VaultIsPaused,
+    #[msg("Not eligible to unstake")]
+    NotEligible,
+    #[msg("Not staker")]
+    NotStaker,
     #[msg("Invalid vault id")]
     InvalidVaultId,
     #[msg("Invalid magic")]
@@ -14,4 +20,12 @@ pub enum ErrorCode {
     PeriodsContainsZero,
     #[msg("Periods is empty")]
     PeriodsIsEmpty,
+    #[msg("Invalid vault mint")]
+    InvalidVaultMint,
+    #[msg("Invalid owner")]
+    InvalidOwner,
+    #[msg("Invalid lock id")]
+    InvalidLockId,
+    #[msg("Already unstaked")]
+    AlreadyUnstaked,
 }
