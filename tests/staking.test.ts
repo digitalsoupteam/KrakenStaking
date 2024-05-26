@@ -490,4 +490,341 @@ describe("staking", () => {
         await token1.mintTo({ user: owner, amount: 1024_000_000_000 });
     });
 
+    it("Is initialized!", async () => {
+        // Add your test here.
+        const receipt = await initialize({ admin: owner });
+        expect(receipt.meta.err).to.be.null;
+        console.log(receipt.meta.logMessages);
+    });
+
+    it("Impossible to init twice", async () => {
+        await expect(initialize({ admin: owner })).to.be.rejected;
+    });
+
+    it("Create 2 valid vaults with the same mints", async () => {
+        let event = await getEvent(
+            "createdVault",
+            createVault({
+                admin: owner,
+                vaultId: 1,
+                token: token1,
+                periods: [3, 10, 20],
+            }),
+        );
+        expect(event.id).to.equal(1);
+        expect(event.mint.toBase58()).to.equal(
+            token1.mint.publicKey.toBase58(),
+        );
+        expect(event.periods).to.deep.equal([3, 10, 20]);
+        expect(event.owner.toBase58()).to.equal(owner.publicKey.toBase58());
+
+        await createVault({
+            admin: owner,
+            vaultId: 2,
+            token: token1,
+            periods: [10, 20],
+        });
+
+        /// read the state
+        const [vault1PDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [VAULT_SEED, new anchor.BN(1).toBuffer("le", 4)],
+            program.programId,
+        );
+
+        const [vault2PDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [VAULT_SEED, new anchor.BN(2).toBuffer("le", 4)],
+            program.programId,
+        );
+
+        const vault1State = await program.account.vaultState.fetch(vault1PDA);
+        const vault2State = await program.account.vaultState.fetch(vault2PDA);
+
+        expect(vault1State.id).to.equal(1);
+        expect(vault2State.id).to.equal(2);
+        expect(vault1State.periods).to.deep.equal([3, 10, 20]);
+        expect(vault1State.mint.toBase58()).to.equal(
+            token1.mint.publicKey.toBase58(),
+        );
+        expect(vault1State.owner.toBase58()).to.equal(
+            owner.publicKey.toBase58(),
+        );
+        expect(vault1State.paused).to.equal(false);
+    });
+
+    it("Create 2 valid vaults with different mints", async () => {
+        await createVault({
+            admin: owner,
+            vaultId: 3,
+            token: token1,
+            periods: [3, 5, 10, 20],
+        });
+        await createVault({
+            admin: owner,
+            vaultId: 4,
+            token: token2,
+            periods: [10, 20],
+        });
+
+        /// read the state
+        const [vault3PDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [VAULT_SEED, new anchor.BN(3).toBuffer("le", 4)],
+            program.programId,
+        );
+
+        const [vault4PDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [VAULT_SEED, new anchor.BN(4).toBuffer("le", 4)],
+            program.programId,
+        );
+
+        const vault3State = await program.account.vaultState.fetch(vault3PDA);
+        const vault4State = await program.account.vaultState.fetch(vault4PDA);
+
+        expect(vault3State.mint.toBase58()).to.equal(
+            token1.mint.publicKey.toBase58(),
+        );
+        expect(vault4State.mint.toBase58()).to.equal(
+            token2.mint.publicKey.toBase58(),
+        );
+    });
+
+    it("Create vault with wrong vaultId", async () => {
+        await expect(
+            createVault({
+                admin: owner,
+                vaultId: 1000,
+                token: token1,
+                periods: [10, 20],
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Create vault with zero periods", async () => {
+        await expect(
+            createVault({
+                admin: owner,
+                vaultId: 5,
+                token: token1,
+                periods: [],
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Create vault with period with 0 seconds", async () => {
+        await expect(
+            createVault({
+                admin: owner,
+                vaultId: 5,
+                token: token1,
+                periods: [0, 20],
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Pause vault by admin", async () => {
+        await Promise.all([
+            pauseOrResumeVault({
+                newState: false,
+                admin: owner,
+                vaultId: 1,
+            }),
+            pauseOrResumeVault({
+                newState: false,
+                admin: owner,
+                vaultId: 2,
+            }),
+        ]);
+        const vault1State = await program.account.vaultState.fetch(
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [VAULT_SEED, new anchor.BN(1).toBuffer("le", 4)],
+                program.programId,
+            )[0],
+        );
+        expect(vault1State.paused).to.equal(true);
+    });
+
+    it("Unpause vault", async () => {
+        await pauseOrResumeVault({
+            newState: true,
+            admin: owner,
+            vaultId: 1,
+        });
+        const vault1State = await program.account.vaultState.fetch(
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [VAULT_SEED, new anchor.BN(1).toBuffer("le", 4)],
+                program.programId,
+            )[0],
+        );
+        expect(vault1State.paused).to.equal(false);
+    });
+
+    it("Pause by not owner or admin", async () => {
+        await expect(
+            pauseOrResumeVault({
+                newState: true,
+                admin: user1,
+                vaultId: 1,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Stake and unstake", async () => {
+        const [userConfigPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [USER_SEED, user1.publicKey.toBuffer()],
+            program.programId,
+        );
+        await token1.mintTo({ user: user1, amount: 10 });
+        let event = await getEvent(
+            "staked",
+            stake({
+                user: user1,
+                token: token1,
+                vaultId: 1,
+                stakeId: 1,
+                period: 3,
+                amount: 10,
+            }),
+        );
+        expect(event.staker.toBase58()).to.equal(user1.publicKey.toBase58());
+        expect(event.id).to.equal(1);
+        expect(event.amount.toNumber()).to.equal(10);
+        expect(event.period).to.equal(3);
+
+        let userConfigAfter =
+            await program.account.userConfigState.fetch(userConfigPDA);
+
+        expect(userConfigAfter.lastLockId).to.equal(1);
+        expect(await token1.getBalanceIntFor(user1.publicKey)).to.equal(0);
+
+        await expect(
+            unstake({
+                user: user1,
+                token: token1,
+                vaultId: 1,
+                stakeId: 1,
+            }),
+        ).to.be.rejected;
+
+        // sleep for 4 seconds
+        await sleep(4000);
+        let event2 = await getEvent(
+            "unstaked",
+            unstake({
+                user: user1,
+                token: token1,
+                vaultId: 1,
+                stakeId: 1,
+            }),
+        );
+        expect(event2.staker.toBase58()).to.equal(user1.publicKey.toBase58());
+        expect(event2.id).to.equal(1);
+        expect(event2.amount.toNumber()).to.equal(10);
+        expect(event2.period).to.equal(3);
+        expect(await token1.getBalanceIntFor(user1.publicKey)).to.equal(10);
+    });
+
+    it("Stake to paused vault", async () => {
+        await expect(
+            stake({
+                user: user1,
+                token: token1,
+                vaultId: 2,
+                stakeId: 1,
+                period: 10,
+                amount: 10,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Unstake from paused vault", async () => {
+        await stake({
+            user: user1,
+            token: token1,
+            vaultId: 1,
+            stakeId: 2,
+            period: 3,
+            amount: 10,
+        });
+        await pauseOrResumeVault({
+            newState: false,
+            admin: owner,
+            vaultId: 1,
+        });
+        await sleep(4000);
+        await expect(
+            unstake({
+                user: user1,
+                token: token1,
+                vaultId: 1,
+                stakeId: 2,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Stake with wrong expected stake id", async () => {
+        await expect(
+            stake({
+                user: user1,
+                token: token1,
+                vaultId: 3,
+                stakeId: 300,
+                period: 10,
+                amount: 10,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Unstake twice", async () => {
+        await pauseOrResumeVault({
+            newState: true,
+            admin: owner,
+            vaultId: 1,
+        });
+        await unstake({
+            user: user1,
+            token: token1,
+            vaultId: 1,
+            stakeId: 2,
+        });
+
+        await expect(
+            unstake({
+                user: user1,
+                token: token1,
+                vaultId: 1,
+                stakeId: 2,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Unstake by not owner", async () => {
+        await stake({
+            user: user1,
+            token: token1,
+            vaultId: 1,
+            stakeId: 3,
+            period: 3,
+            amount: 10,
+        });
+        await sleep(4000);
+
+        await expect(
+            unstake({
+                user: user2,
+                token: token1,
+                vaultId: 1,
+                stakeId: 3,
+            }),
+        ).to.be.rejected;
+    });
+
+    it("Unstake using wrong vault", async () => {
+        await expect(
+            unstake({
+                user: user1,
+                token: token1,
+                vaultId: 2,
+                stakeId: 3,
+            }),
+        ).to.be.rejected;
+    });
 });
