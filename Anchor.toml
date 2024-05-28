@@ -22,4 +22,8 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
-
+create-vault = "yarn run ts-node scripts/create_vault.ts"
+print = "yarn run ts-node scripts/print.ts"
+manage-vault = "yarn run ts-node scripts/manage_vault.ts"
+user-stake = "yarn run ts-node scripts/stake.ts"
+user-unstake = "yarn run ts-node scripts/unstake.ts"
