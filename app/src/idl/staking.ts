@@ -8,7 +8,7 @@ export type Staking = {
   "address": "8jQ519dZStwEm7x6cspozH5Cm8Uxo8Ht1ePWDbaW4qHu",
   "metadata": {
     "name": "staking",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
@@ -882,43 +882,43 @@ export type Staking = {
     },
     {
       "code": 6005,
-      "name": "invalidMagic",
-      "msg": "Invalid magic"
-    },
-    {
-      "code": 6006,
       "name": "periodsIsNotUnique",
       "msg": "Periods is not unique"
     },
     {
-      "code": 6007,
+      "code": 6006,
       "name": "periodsContainsZero",
       "msg": "Periods contains zero"
     },
     {
-      "code": 6008,
+      "code": 6007,
       "name": "periodsIsEmpty",
       "msg": "Periods is empty"
     },
     {
-      "code": 6009,
+      "code": 6008,
       "name": "invalidVaultMint",
       "msg": "Invalid vault mint"
     },
     {
-      "code": 6010,
+      "code": 6009,
       "name": "invalidOwner",
       "msg": "Invalid owner"
     },
     {
-      "code": 6011,
+      "code": 6010,
       "name": "invalidLockId",
       "msg": "Invalid lock id"
     },
     {
-      "code": 6012,
+      "code": 6011,
       "name": "alreadyUnstaked",
       "msg": "Already unstaked"
+    },
+    {
+      "code": 6012,
+      "name": "invalidReferrer",
+      "msg": "Invalid referrer"
     }
   ],
   "types": [
@@ -1004,10 +1004,6 @@ export type Staking = {
         "kind": "struct",
         "fields": [
           {
-            "name": "magic",
-            "type": "u32"
-          },
-          {
             "name": "id",
             "type": "u32"
           },
@@ -1022,6 +1018,10 @@ export type Staking = {
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "unstakedAt",
+            "type": "u32"
           },
           {
             "name": "lockedFor",
@@ -1104,6 +1104,12 @@ export type Staking = {
           {
             "name": "period",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "pubkey"
+            }
           }
         ]
       }
@@ -1218,12 +1224,14 @@ export type Staking = {
         "kind": "struct",
         "fields": [
           {
-            "name": "magic",
+            "name": "lastLockId",
             "type": "u32"
           },
           {
-            "name": "lastLockId",
-            "type": "u32"
+            "name": "referrer",
+            "type": {
+              "option": "pubkey"
+            }
           }
         ]
       }
@@ -1233,10 +1241,6 @@ export type Staking = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "magic",
-            "type": "u32"
-          },
           {
             "name": "id",
             "type": "u32"

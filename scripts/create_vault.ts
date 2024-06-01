@@ -25,12 +25,7 @@ async function run(): Promise<void> {
             },
         })
         .parse();
-    if (!argv.vaultId || !argv.periods || !argv.mint) {
-        throw new Error(
-            "--vault-id=number, --periods=number,number and --mint=publickey are required",
-        );
-    }
-    console.log(`PERIODS ${argv.periods}`)
+    console.log(`PERIODS ${argv.periods}`);
     const vaultId = argv.vaultId;
     const periods = argv.periods;
     const admin = loadKeypair(process.env.ADMIN_KEY_PATH!);

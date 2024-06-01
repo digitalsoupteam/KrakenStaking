@@ -1,6 +1,6 @@
+use anchor_lang::prelude::*;
 use std::collections::HashSet;
 
-use anchor_lang::prelude::*;
 use crate::errors::ErrorCode;
 
 #[account]
@@ -20,11 +20,9 @@ impl ProgramState {
     ;
 }
 
-
 #[account]
 #[derive(Default, Debug)]
 pub struct VaultState {
-    pub magic: u32,
     pub id: u32,
     pub owner: Pubkey,
     pub mint: Pubkey,
@@ -33,12 +31,10 @@ pub struct VaultState {
 }
 
 impl VaultState {
-    pub const MAGIC: u32 = 0xdeadbeef;
     pub const SEED: &'static [u8] = b"vault";
 
     pub fn default() -> Self {
         Self {
-            magic: VaultState::MAGIC,
             id: 0,
             owner: Pubkey::default(),
             mint: Pubkey::default(),
@@ -48,21 +44,13 @@ impl VaultState {
     }
 
     #[allow(non_snake_case)]
-    pub fn MAX_SIZE(size: u64) -> usize { 
-        4
-        + 4
-        + 32 
-        + 32
-        + (4 + 4 * size as usize)
-        + 1
+    pub fn MAX_SIZE(size: u64) -> usize {
+        4 + 32 + 32 + (4 + 4 * size as usize) + 1
     }
 
     pub fn is_valid(&self) -> Result<()> {
         let set: HashSet<_> = self.periods.iter().collect();
 
-        if self.magic != VaultState::MAGIC {
-            return Err(ErrorCode::InvalidMagic.into());
-        }
         if set.len() != self.periods.len() {
             return Err(ErrorCode::PeriodsIsNotUnique.into());
         }
@@ -79,21 +67,20 @@ impl VaultState {
 #[account]
 #[derive(Default, Debug)]
 pub struct UserConfigState {
-    pub magic: u32,
     pub last_lock_id: u32,
+    pub referrer: Option<Pubkey>,
 }
 
 impl UserConfigState {
-    pub const MAGIC: u32 = 0xc0febabe;
     pub const SEED: &'static [u8] = b"user_config";
-    pub const MAX_SIZE: usize = 4 // magic
-        + 4 // last_id
+    pub const MAX_SIZE: usize = 4 // last_id
+    + (1 + 32) // referrer
     ;
 
     pub fn default() -> Self {
         Self {
-            magic: UserConfigState::MAGIC,
             last_lock_id: 0,
+            referrer: None,
         }
     }
 }
@@ -101,37 +88,35 @@ impl UserConfigState {
 #[account]
 #[derive(Default, Debug)]
 pub struct LockState {
-    pub magic: u32,
     pub id: u32,
     pub vault: Pubkey,
     pub staker: Pubkey,
     pub amount: u64,
+    pub unstaked_at: u32,
     pub locked_for: u32,
     pub locked_at: u32,
 }
 
 impl LockState {
-    pub const MAGIC : u32 = 0x1337c0fe;
     pub const SEED: &'static [u8] = b"lock";
-    pub const MAX_SIZE: usize = 4 // magic
-        + 4 // id
+    pub const MAX_SIZE: usize = 4 // id
         + 32 // vault
         + 32 // staker
         + 8 // amount
+        + 4 // unstaked_at
         + 4 // locked_for
         + 4 // locked_at
     ;
 
     pub fn default() -> Self {
         Self {
-            magic: LockState::MAGIC,
             id: 0,
             vault: Pubkey::default(),
             staker: Pubkey::default(),
             amount: 0,
+            unstaked_at: 0,
             locked_for: 0,
             locked_at: 0,
         }
     }
 }
-

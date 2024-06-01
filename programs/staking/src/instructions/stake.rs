@@ -9,11 +9,14 @@ use crate::states::{LockState, UserConfigState, VaultState};
 pub fn stake(ctx: Context<Stake>, args: StakeArgs) -> Result<()> {
     let vault = &ctx.accounts.vault;
 
-    if ctx.accounts.user_config.last_lock_id == 0 {
-        ctx.accounts.user_config.magic = UserConfigState::MAGIC;
-    }
-
     ctx.accounts.user_config.last_lock_id += 1;
+
+    if args.referrer.is_some() && ctx.accounts.user_config.referrer.is_none() {
+        if args.referrer.unwrap() == ctx.accounts.staker.key() {
+            return Err(ErrorCode::InvalidReferrer.into());
+        }
+        ctx.accounts.user_config.referrer = args.referrer;
+    }
 
     if args.stake_id != ctx.accounts.user_config.last_lock_id {
         return Err(ErrorCode::InvalidLockId.into());
@@ -24,7 +27,6 @@ pub fn stake(ctx: Context<Stake>, args: StakeArgs) -> Result<()> {
     }
 
     let user_lock = &mut ctx.accounts.user_lock;
-    user_lock.magic = LockState::MAGIC;
     user_lock.id = ctx.accounts.user_config.last_lock_id;
     user_lock.vault = ctx.accounts.vault.key();
     user_lock.staker = ctx.accounts.staker.key();
@@ -65,6 +67,7 @@ pub struct StakeArgs {
     pub stake_id: u32,
     pub amount: u64,
     pub period: u32,
+    pub referrer: Option<Pubkey>,
 }
 
 #[derive(Accounts)]

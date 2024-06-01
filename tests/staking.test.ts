@@ -25,6 +25,57 @@ const USER_SEED = Buffer.from("user_config");
 const VAULT_SEED = Buffer.from("vault");
 const LOCK_SEED = Buffer.from("lock");
 
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace Chai {
+        interface Assertion {
+            rejectedWithLog(error: string): Promise<void>;
+            rejectedWithAnchorError(
+                idl: anchor.Idl,
+                errorName: string,
+                programId: PublicKey,
+            ): Promise<void>;
+        }
+    }
+}
+
+const expectAnchorError =
+    (errorCode: number, errorName: string, programId?: PublicKey) =>
+    (anchorErr: any) => {
+        const normalisedError = anchor.AnchorError.parse(anchorErr.logs);
+        function convertFirstToLower(input) {
+            if (!input) return "";
+            return input.charAt(0).toLowerCase() + input.slice(1);
+        }
+        expect(normalisedError).not.to.be.null;
+        let actualErrorCode = convertFirstToLower(
+            normalisedError!.error.errorCode.code,
+        );
+        expect(actualErrorCode).to.equal(errorName);
+        expect(normalisedError!.error.errorCode.number).to.equal(errorCode);
+        if (programId) {
+            expect(normalisedError!.program.equals(programId)).is.true;
+        }
+    };
+
+chai.Assertion.addMethod("rejectedWithLog", function (error: string) {
+    return expect(this._obj).to.be.rejected.then((err) => {
+        let logs = err.logs as string[];
+        let found = logs.find((log: string) => log.includes(error));
+        expect(found).to.be.contains(error);
+    });
+});
+chai.Assertion.addMethod(
+    "rejectedWithAnchorError",
+    function (idl: anchor.Idl, name: string, programId?: PublicKey) {
+        const found = idl.errors?.find((e) => e.name === name);
+        if (!found) throw new Error(`No error with name ${name} found in IDL`);
+        return expect(this._obj).to.be.rejected.then(
+            expectAnchorError(found.code, name, programId),
+        );
+    },
+);
+
 class Token {
     mint: Keypair;
     owner: Keypair;
@@ -209,12 +260,17 @@ describe("staking", () => {
     ) => {
         let listenerId: number;
         const event = await new Promise<Event[E]>(async (res) => {
+            let timeout = setTimeout(() => {
+                program.removeEventListener(listenerId);
+                throw new Error(`Timeout waiting for event ${eventName}`);
+            }, 4000);
             listenerId = program.addEventListener(eventName, async (event) => {
+                clearTimeout(timeout);
                 res(event);
             });
             await fn;
+            await program.removeEventListener(listenerId);
         });
-        await program.removeEventListener(listenerId);
         return event;
     };
 
@@ -349,6 +405,7 @@ describe("staking", () => {
     const stake = async (args: {
         user: Keypair;
         token: Token;
+        referrer?: Keypair;
         vaultId: number;
         stakeId: number;
         period: number;
@@ -393,6 +450,7 @@ describe("staking", () => {
                 vaultId: args.vaultId,
                 stakeId: args.stakeId,
                 period: args.period,
+                referrer: args.referrer?.publicKey ?? null,
             })
             .accounts(accounts)
             .signers([args.user]);
@@ -417,20 +475,32 @@ describe("staking", () => {
         token: Token;
         vaultId: number;
         stakeId: number;
+        vaultPDA?: PublicKey;
+        stakePDA?: PublicKey;
     }) => {
-        const [vaultPDA] = anchor.web3.PublicKey.findProgramAddressSync(
-            [VAULT_SEED, new anchor.BN(args.vaultId).toBuffer("le", 4)],
-            program.programId,
-        );
+        let vaultPDA: PublicKey;
+        let stakePDA: PublicKey;
+        if (args.vaultPDA) {
+            vaultPDA = args.vaultPDA;
+        } else {
+            [vaultPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+                [VAULT_SEED, new anchor.BN(args.vaultId).toBuffer("le", 4)],
+                program.programId,
+            );
+        }
 
-        const [stakePDA] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                LOCK_SEED,
-                args.user.publicKey.toBuffer(),
-                new anchor.BN(args.stakeId).toBuffer("le", 4),
-            ],
-            program.programId,
-        );
+        if (args.stakePDA) {
+            stakePDA = args.stakePDA;
+        } else {
+            [stakePDA] = anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    LOCK_SEED,
+                    args.user.publicKey.toBuffer(),
+                    new anchor.BN(args.stakeId).toBuffer("le", 4),
+                ],
+                program.programId,
+            );
+        }
 
         const [userConfigPDA] = anchor.web3.PublicKey.findProgramAddressSync(
             [USER_SEED, args.user.publicKey.toBuffer()],
@@ -494,11 +564,12 @@ describe("staking", () => {
         // Add your test here.
         const receipt = await initialize({ admin: owner });
         expect(receipt.meta.err).to.be.null;
-        console.log(receipt.meta.logMessages);
     });
 
     it("Impossible to init twice", async () => {
-        await expect(initialize({ admin: owner })).to.be.rejected;
+        await expect(initialize({ admin: owner })).to.be.rejectedWithLog(
+            "already in use",
+        );
     });
 
     it("Create 2 valid vaults with the same mints", async () => {
@@ -595,7 +666,11 @@ describe("staking", () => {
                 token: token1,
                 periods: [10, 20],
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "invalidVaultId",
+            program.programId,
+        );
     });
 
     it("Create vault with zero periods", async () => {
@@ -606,7 +681,26 @@ describe("staking", () => {
                 token: token1,
                 periods: [],
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "periodsIsEmpty",
+            program.programId,
+        );
+    });
+
+    it("Create vault with non uniq periods", async () => {
+        await expect(
+            createVault({
+                admin: owner,
+                vaultId: 5,
+                token: token1,
+                periods: [20, 20],
+            }),
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "periodsIsNotUnique",
+            program.programId,
+        );
     });
 
     it("Create vault with period with 0 seconds", async () => {
@@ -617,7 +711,11 @@ describe("staking", () => {
                 token: token1,
                 periods: [0, 20],
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "periodsContainsZero",
+            program.programId,
+        );
     });
 
     it("Pause vault by admin", async () => {
@@ -664,7 +762,7 @@ describe("staking", () => {
                 admin: user1,
                 vaultId: 1,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithLog("ConstraintRaw");
     });
 
     it("Stake and unstake", async () => {
@@ -702,7 +800,11 @@ describe("staking", () => {
                 vaultId: 1,
                 stakeId: 1,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "notEligible",
+            program.programId,
+        );
 
         // sleep for 4 seconds
         await sleep(4000);
@@ -715,6 +817,23 @@ describe("staking", () => {
                 stakeId: 1,
             }),
         );
+        const [lockPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                LOCK_SEED,
+                user1.publicKey.toBuffer(),
+                new anchor.BN(1).toBuffer("le", 4),
+            ],
+            program.programId,
+        );
+        let lockState = await program.account.lockState.fetch(lockPDA);
+        expect(lockState.amount.toNumber()).to.equal(10);
+        expect(lockState.lockedFor).to.equal(3);
+        expect(lockState.staker.toBase58()).to.equal(
+            user1.publicKey.toBase58(),
+        );
+        expect(lockState.id).to.equal(1);
+        expect(lockState.unstakedAt).to.gte(0);
+
         expect(event2.staker.toBase58()).to.equal(user1.publicKey.toBase58());
         expect(event2.id).to.equal(1);
         expect(event2.amount.toNumber()).to.equal(10);
@@ -728,11 +847,15 @@ describe("staking", () => {
                 user: user1,
                 token: token1,
                 vaultId: 2,
-                stakeId: 1,
+                stakeId: 2,
                 period: 10,
                 amount: 10,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "vaultIsPaused",
+            program.programId,
+        );
     });
 
     it("Unstake from paused vault", async () => {
@@ -757,7 +880,11 @@ describe("staking", () => {
                 vaultId: 1,
                 stakeId: 2,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "vaultIsPaused",
+            program.programId,
+        );
     });
 
     it("Stake with wrong expected stake id", async () => {
@@ -770,7 +897,11 @@ describe("staking", () => {
                 period: 10,
                 amount: 10,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "invalidLockId",
+            program.programId,
+        );
     });
 
     it("Unstake twice", async () => {
@@ -793,7 +924,11 @@ describe("staking", () => {
                 vaultId: 1,
                 stakeId: 2,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "alreadyUnstaked",
+            program.programId,
+        );
     });
 
     it("Unstake by not owner", async () => {
@@ -805,7 +940,24 @@ describe("staking", () => {
             period: 3,
             amount: 10,
         });
+        await token1.mintTo({ user: user2, amount: 10 });
+        await stake({
+            user: user2,
+            token: token1,
+            vaultId: 1,
+            stakeId: 1,
+            period: 3,
+            amount: 10,
+        });
         await sleep(4000);
+        const [stakeUser1PDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                LOCK_SEED,
+                user1.publicKey.toBuffer(),
+                new anchor.BN(3).toBuffer("le", 4),
+            ],
+            program.programId,
+        );
 
         await expect(
             unstake({
@@ -813,8 +965,9 @@ describe("staking", () => {
                 token: token1,
                 vaultId: 1,
                 stakeId: 3,
+                stakePDA: stakeUser1PDA,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithLog("A seeds constraint was violated");
     });
 
     it("Unstake using wrong vault", async () => {
@@ -825,6 +978,51 @@ describe("staking", () => {
                 vaultId: 2,
                 stakeId: 3,
             }),
-        ).to.be.rejected;
+        ).to.be.rejectedWithLog("ConstraintHasOne");
+    });
+
+    it("Stake with referrer", async () => {
+        const [userPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [USER_SEED, user1.publicKey.toBuffer()],
+            program.programId,
+        );
+        const userStateBefore =
+            await program.account.userConfigState.fetch(userPDA);
+
+        await token1.mintTo({ user: user1, amount: 10 });
+        expect(userStateBefore.referrer).to.equal(null);
+
+        await stake({
+            user: user1,
+            token: token1,
+            vaultId: 1,
+            stakeId: 4,
+            period: 3,
+            amount: 10,
+            referrer: user2,
+        });
+        const userState = await program.account.userConfigState.fetch(userPDA);
+        expect(userState.referrer.toBase58()).to.equal(
+            user2.publicKey.toBase58(),
+        );
+    });
+
+    it("Stake with referrer equal to staker", async () => {
+        await token1.mintTo({ user: user1, amount: 10 });
+        await expect(
+            stake({
+                user: user2,
+                token: token1,
+                vaultId: 1,
+                stakeId: 2,
+                period: 3,
+                amount: 10,
+                referrer: user2,
+            }),
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "invalidReferrer",
+            program.programId,
+        );
     });
 });

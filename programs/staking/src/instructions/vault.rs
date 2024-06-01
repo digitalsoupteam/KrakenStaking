@@ -14,7 +14,6 @@ pub fn create_vault(ctx: Context<CreateVault>, args: CreateVaultArgs) -> Result<
     }
 
     let vault = &mut ctx.accounts.vault;
-    vault.magic = VaultState::MAGIC;
     vault.id = args.vault_id;
     vault.owner = ctx.accounts.signer.key();
     vault.mint = ctx.accounts.mint.key();
@@ -40,7 +39,6 @@ pub fn unpause_vault(ctx: Context<UpdateVault>, _args: UpdateVaultArgs) -> Resul
     ctx.accounts.vault.paused = false;
     Ok(())
 }
-
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]
 pub struct CreateVaultArgs {
@@ -92,7 +90,6 @@ pub struct CreateVault<'info> {
 
     pub system_program: Program<'info, System>,
 }
-
 
 #[derive(Accounts)]
 #[instruction(vault_id: u32)]

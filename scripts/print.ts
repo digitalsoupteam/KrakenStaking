@@ -20,9 +20,6 @@ async function run(): Promise<void> {
             mint: { type: "string", demandOption: true },
         })
         .parse();
-    if (!argv.vaultId || !argv.mint) {
-        throw new Error("--vault-id=number, --mint=publickey are required");
-    }
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Staking as anchor.Program<Staking>;

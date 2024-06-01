@@ -12,8 +12,6 @@ pub enum ErrorCode {
     NotStaker,
     #[msg("Invalid vault id")]
     InvalidVaultId,
-    #[msg("Invalid magic")]
-    InvalidMagic,
     #[msg("Periods is not unique")]
     PeriodsIsNotUnique,
     #[msg("Periods contains zero")]
@@ -28,4 +26,6 @@ pub enum ErrorCode {
     InvalidLockId,
     #[msg("Already unstaked")]
     AlreadyUnstaked,
+    #[msg("Invalid referrer")]
+    InvalidReferrer,
 }

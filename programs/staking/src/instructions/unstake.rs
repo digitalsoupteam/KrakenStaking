@@ -8,10 +8,12 @@ use crate::states::{LockState, UserConfigState, VaultState};
 
 pub fn unstake(ctx: Context<Unstake>, _args: UnstakeArgs) -> Result<()> {
     let user_lock = &mut ctx.accounts.user_lock;
+    let now = Clock::get()?.unix_timestamp as u32;
 
-    if user_lock.locked_at + user_lock.locked_for > Clock::get()?.unix_timestamp as u32 {
+    if user_lock.locked_at + user_lock.locked_for > now {
         return Err(ErrorCode::NotEligible.into());
     }
+    user_lock.unstaked_at = now;
 
     // transfer back from vault_token -> user_token
     anchor_spl::token::transfer_checked(
@@ -41,8 +43,6 @@ pub fn unstake(ctx: Context<Unstake>, _args: UnstakeArgs) -> Result<()> {
         period: user_lock.locked_for,
         id: user_lock.id,
     });
-
-    user_lock.amount = 0;
     Ok(())
 }
 
@@ -63,7 +63,7 @@ pub struct Unstake<'info> {
         mut,
         seeds = [LockState::SEED, staker.key().as_ref(), stake_id.to_le_bytes().as_ref()],
         constraint = user_lock.staker == staker.key() @ ErrorCode::InvalidOwner,
-        constraint = user_lock.amount > 0 @ ErrorCode::AlreadyUnstaked,
+        constraint = user_lock.unstaked_at == 0 @ ErrorCode::AlreadyUnstaked,
         has_one = vault,
         has_one = staker,
         bump
@@ -82,7 +82,6 @@ pub struct Unstake<'info> {
 
     #[account(
         seeds = [UserConfigState::SEED, staker.key().as_ref()],
-        constraint = user_config.magic == UserConfigState::MAGIC,
         bump
     )]
     pub user_config: Account<'info, UserConfigState>,
