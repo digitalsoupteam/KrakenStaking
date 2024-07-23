@@ -60,6 +60,9 @@ impl VaultState {
         if set.contains(&0) {
             return Err(ErrorCode::PeriodsContainsZero.into());
         }
+        if set.into_iter().any(|&x| x > 86400 * 365 * 10) {
+            return Err(ErrorCode::PeriodIsTooBig.into());
+        }
         Ok(())
     }
 }

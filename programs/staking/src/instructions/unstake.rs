@@ -9,8 +9,9 @@ use crate::states::{LockState, UserConfigState, VaultState};
 pub fn unstake(ctx: Context<Unstake>, _args: UnstakeArgs) -> Result<()> {
     let user_lock = &mut ctx.accounts.user_lock;
     let now = Clock::get()?.unix_timestamp as u32;
+    let deadline = user_lock.locked_at.checked_add(user_lock.locked_for).expect("Overflow");
 
-    if user_lock.locked_at + user_lock.locked_for > now {
+    if deadline > now {
         return Err(ErrorCode::NotEligible.into());
     }
     user_lock.unstaked_at = now;

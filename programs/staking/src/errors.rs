@@ -18,6 +18,8 @@ pub enum ErrorCode {
     PeriodsContainsZero,
     #[msg("Periods is empty")]
     PeriodsIsEmpty,
+    #[msg("Period is to big")]
+    PeriodIsTooBig,
     #[msg("Invalid vault mint")]
     InvalidVaultMint,
     #[msg("Invalid owner")]
