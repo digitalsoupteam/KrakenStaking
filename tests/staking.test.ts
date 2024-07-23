@@ -688,6 +688,21 @@ describe("staking", () => {
         );
     });
 
+    it("Create vault with very big period", async () => {
+        await expect(
+            createVault({
+                admin: owner,
+                vaultId: 5,
+                token: token1,
+                periods: [20, 86400 * 365 * 10 + 1],
+            }),
+        ).to.be.rejectedWithAnchorError(
+            program.idl,
+            "periodIsTooBig",
+            program.programId,
+        );
+    });
+
     it("Create vault with non uniq periods", async () => {
         await expect(
             createVault({
