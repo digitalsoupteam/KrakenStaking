@@ -1,10 +1,12 @@
 {
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "server": "ts-node app/src/server.ts"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.30.0"
+    "@coral-xyz/anchor": "^0.30.0",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.30.0",

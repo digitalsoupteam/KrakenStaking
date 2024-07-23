@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/staking.json`.
  */
 export type Staking = {
-  "address": "8jQ519dZStwEm7x6cspozH5Cm8Uxo8Ht1ePWDbaW4qHu",
+  "address": "FpyVkPCF1ypYtzkfVYNFKsXSYc7uPWpCrmVQs2J9Vq88",
   "metadata": {
     "name": "staking",
     "version": "0.2.0",
@@ -897,26 +897,31 @@ export type Staking = {
     },
     {
       "code": 6008,
+      "name": "periodIsTooBig",
+      "msg": "Period is to big"
+    },
+    {
+      "code": 6009,
       "name": "invalidVaultMint",
       "msg": "Invalid vault mint"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "invalidOwner",
       "msg": "Invalid owner"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "invalidLockId",
       "msg": "Invalid lock id"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "alreadyUnstaked",
       "msg": "Already unstaked"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "invalidReferrer",
       "msg": "Invalid referrer"
     }
