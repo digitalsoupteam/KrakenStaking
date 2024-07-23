@@ -96,6 +96,7 @@ async function run(): Promise<void> {
             stakeId,
             amount: new anchor.BN(amount),
             period,
+            referrer: null,
         })
         .accounts(accounts)
         .signers([user]);
