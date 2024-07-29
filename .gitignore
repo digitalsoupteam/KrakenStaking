@@ -8,3 +8,4 @@ test-ledger
 trident-tests/fuzz_tests/fuzzing/hfuzz_target
 *.json
 .env
+dist/
