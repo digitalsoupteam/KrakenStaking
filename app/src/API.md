@@ -175,11 +175,8 @@ try {
 ```ts
 {
     account: string;
-    lastUpdateAt: number;
-    lastUpdateTx: string;
     lastLockId: number;
     referrer?: string;
-    stakes: Stake[];
 };
 ```
 
@@ -188,8 +185,6 @@ try {
 ```ts
 {
     account: string;
-    lastUpdateAt: number;
-    lastUpdateTx: string;
     id: number;
     owner: string;
     mint: string;
