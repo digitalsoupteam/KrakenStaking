@@ -1,10 +1,4 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/staking.json`.
- */
-export type Staking = {
+{
   "address": "7DTjgkGtowmJTBZdSUecTEY6upXey9ubr3usP2uamMww",
   "metadata": {
     "name": "staking",
@@ -14,7 +8,7 @@ export type Staking = {
   },
   "instructions": [
     {
-      "name": "confirmNewAdmin",
+      "name": "confirm_new_admin",
       "discriminator": [
         3,
         109,
@@ -57,14 +51,14 @@ export type Staking = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "createVault",
+      "name": "create_vault",
       "discriminator": [
         29,
         237,
@@ -98,7 +92,7 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "vaultId"
+                "path": "vault_id"
               }
             ]
           }
@@ -133,19 +127,19 @@ export type Staking = {
           "name": "mint"
         },
         {
-          "name": "vaultToken",
+          "name": "vault_token",
           "writable": true
         },
         {
-          "name": "tokenProgram",
+          "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -154,7 +148,7 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "createVaultArgs"
+              "name": "CreateVaultArgs"
             }
           }
         }
@@ -205,7 +199,7 @@ export type Staking = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -214,14 +208,14 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "initializeArgs"
+              "name": "InitializeArgs"
             }
           }
         }
       ]
     },
     {
-      "name": "pauseVault",
+      "name": "pause_vault",
       "discriminator": [
         250,
         6,
@@ -255,7 +249,7 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "vaultId"
+                "path": "vault_id"
               }
             ]
           }
@@ -286,7 +280,7 @@ export type Staking = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -295,14 +289,14 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "updateVaultArgs"
+              "name": "UpdateVaultArgs"
             }
           }
         }
       ]
     },
     {
-      "name": "proposeNewAdmin",
+      "name": "propose_new_admin",
       "discriminator": [
         232,
         189,
@@ -345,13 +339,13 @@ export type Staking = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "newAdmin",
+          "name": "new_admin",
           "type": "pubkey"
         }
       ]
@@ -375,7 +369,7 @@ export type Staking = {
           "signer": true
         },
         {
-          "name": "userLock",
+          "name": "user_lock",
           "writable": true,
           "pda": {
             "seeds": [
@@ -394,7 +388,7 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "stakeId"
+                "path": "stake_id"
               }
             ]
           }
@@ -415,13 +409,13 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "vaultId"
+                "path": "vault_id"
               }
             ]
           }
         },
         {
-          "name": "userConfig",
+          "name": "user_config",
           "writable": true,
           "pda": {
             "seeds": [
@@ -449,30 +443,30 @@ export type Staking = {
           }
         },
         {
-          "name": "userToken",
+          "name": "user_token",
           "writable": true
         },
         {
           "name": "mint",
           "relations": [
             "vault",
-            "vaultToken"
+            "vault_token"
           ]
         },
         {
-          "name": "vaultToken",
+          "name": "vault_token",
           "writable": true
         },
         {
-          "name": "tokenProgram",
+          "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -481,14 +475,14 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "stakeArgs"
+              "name": "StakeArgs"
             }
           }
         }
       ]
     },
     {
-      "name": "unpauseVault",
+      "name": "unpause_vault",
       "discriminator": [
         125,
         29,
@@ -522,7 +516,7 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "vaultId"
+                "path": "vault_id"
               }
             ]
           }
@@ -553,7 +547,7 @@ export type Staking = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -562,7 +556,7 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "updateVaultArgs"
+              "name": "UpdateVaultArgs"
             }
           }
         }
@@ -586,11 +580,11 @@ export type Staking = {
           "writable": true,
           "signer": true,
           "relations": [
-            "userLock"
+            "user_lock"
           ]
         },
         {
-          "name": "userLock",
+          "name": "user_lock",
           "writable": true,
           "pda": {
             "seeds": [
@@ -609,7 +603,7 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "stakeId"
+                "path": "stake_id"
               }
             ]
           }
@@ -631,16 +625,16 @@ export type Staking = {
               },
               {
                 "kind": "arg",
-                "path": "vaultId"
+                "path": "vault_id"
               }
             ]
           },
           "relations": [
-            "userLock"
+            "user_lock"
           ]
         },
         {
-          "name": "userConfig",
+          "name": "user_config",
           "pda": {
             "seeds": [
               {
@@ -667,31 +661,31 @@ export type Staking = {
           }
         },
         {
-          "name": "userToken",
+          "name": "user_token",
           "writable": true
         },
         {
           "name": "mint",
           "relations": [
             "vault",
-            "userToken",
-            "vaultToken"
+            "user_token",
+            "vault_token"
           ]
         },
         {
-          "name": "vaultToken",
+          "name": "vault_token",
           "writable": true
         },
         {
-          "name": "tokenProgram",
+          "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -700,7 +694,7 @@ export type Staking = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "unstakeArgs"
+              "name": "UnstakeArgs"
             }
           }
         }
@@ -709,7 +703,7 @@ export type Staking = {
   ],
   "accounts": [
     {
-      "name": "lockState",
+      "name": "LockState",
       "discriminator": [
         140,
         53,
@@ -722,7 +716,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "programState",
+      "name": "ProgramState",
       "discriminator": [
         77,
         209,
@@ -735,7 +729,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "userConfigState",
+      "name": "UserConfigState",
       "discriminator": [
         19,
         88,
@@ -748,7 +742,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "vaultState",
+      "name": "VaultState",
       "discriminator": [
         228,
         196,
@@ -763,7 +757,7 @@ export type Staking = {
   ],
   "events": [
     {
-      "name": "confirmedAdmin",
+      "name": "ConfirmedAdmin",
       "discriminator": [
         129,
         131,
@@ -776,7 +770,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "createdVault",
+      "name": "CreatedVault",
       "discriminator": [
         39,
         21,
@@ -789,7 +783,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "pausedVault",
+      "name": "PausedVault",
       "discriminator": [
         186,
         20,
@@ -802,7 +796,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "promotedAdmin",
+      "name": "PromotedAdmin",
       "discriminator": [
         163,
         200,
@@ -815,7 +809,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "staked",
+      "name": "Staked",
       "discriminator": [
         11,
         146,
@@ -828,7 +822,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "unpausedVault",
+      "name": "UnpausedVault",
       "discriminator": [
         80,
         172,
@@ -841,7 +835,7 @@ export type Staking = {
       ]
     },
     {
-      "name": "unstaked",
+      "name": "Unstaked",
       "discriminator": [
         27,
         179,
@@ -857,99 +851,99 @@ export type Staking = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAdmin",
+      "name": "NotAdmin",
       "msg": "Not admin"
     },
     {
       "code": 6001,
-      "name": "vaultIsPaused",
+      "name": "VaultIsPaused",
       "msg": "Vault is paused"
     },
     {
       "code": 6002,
-      "name": "notEligible",
+      "name": "NotEligible",
       "msg": "Not eligible to unstake"
     },
     {
       "code": 6003,
-      "name": "notStaker",
+      "name": "NotStaker",
       "msg": "Not staker"
     },
     {
       "code": 6004,
-      "name": "invalidVaultId",
+      "name": "InvalidVaultId",
       "msg": "Invalid vault id"
     },
     {
       "code": 6005,
-      "name": "periodsIsNotUnique",
+      "name": "PeriodsIsNotUnique",
       "msg": "Periods is not unique"
     },
     {
       "code": 6006,
-      "name": "periodsContainsZero",
+      "name": "PeriodsContainsZero",
       "msg": "Periods contains zero"
     },
     {
       "code": 6007,
-      "name": "periodsIsEmpty",
+      "name": "PeriodsIsEmpty",
       "msg": "Periods is empty"
     },
     {
       "code": 6008,
-      "name": "periodIsTooBig",
+      "name": "PeriodIsTooBig",
       "msg": "Period is to big"
     },
     {
       "code": 6009,
-      "name": "invalidVaultMint",
+      "name": "InvalidVaultMint",
       "msg": "Invalid vault mint"
     },
     {
       "code": 6010,
-      "name": "invalidOwner",
+      "name": "InvalidOwner",
       "msg": "Invalid owner"
     },
     {
       "code": 6011,
-      "name": "invalidLockId",
+      "name": "InvalidLockId",
       "msg": "Invalid lock id"
     },
     {
       "code": 6012,
-      "name": "alreadyUnstaked",
+      "name": "AlreadyUnstaked",
       "msg": "Already unstaked"
     },
     {
       "code": 6013,
-      "name": "invalidReferrer",
+      "name": "InvalidReferrer",
       "msg": "Invalid referrer"
     }
   ],
   "types": [
     {
-      "name": "confirmedAdmin",
+      "name": "ConfirmedAdmin",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "prevAdmin",
+            "name": "prev_admin",
             "type": "pubkey"
           },
           {
-            "name": "newAdmin",
+            "name": "new_admin",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "createVaultArgs",
+      "name": "CreateVaultArgs",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vaultId",
+            "name": "vault_id",
             "type": "u32"
           },
           {
@@ -962,7 +956,7 @@ export type Staking = {
       }
     },
     {
-      "name": "createdVault",
+      "name": "CreatedVault",
       "type": {
         "kind": "struct",
         "fields": [
@@ -992,7 +986,7 @@ export type Staking = {
       }
     },
     {
-      "name": "initializeArgs",
+      "name": "InitializeArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1004,7 +998,7 @@ export type Staking = {
       }
     },
     {
-      "name": "lockState",
+      "name": "LockState",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1025,22 +1019,22 @@ export type Staking = {
             "type": "u64"
           },
           {
-            "name": "unstakedAt",
+            "name": "unstaked_at",
             "type": "u32"
           },
           {
-            "name": "lockedFor",
+            "name": "locked_for",
             "type": "u32"
           },
           {
-            "name": "lockedAt",
+            "name": "locked_at",
             "type": "u32"
           }
         ]
       }
     },
     {
-      "name": "pausedVault",
+      "name": "PausedVault",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1052,7 +1046,7 @@ export type Staking = {
       }
     },
     {
-      "name": "programState",
+      "name": "ProgramState",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1061,20 +1055,20 @@ export type Staking = {
             "type": "pubkey"
           },
           {
-            "name": "newAdmin",
+            "name": "new_admin",
             "type": {
               "option": "pubkey"
             }
           },
           {
-            "name": "lastVaultId",
+            "name": "last_vault_id",
             "type": "u32"
           }
         ]
       }
     },
     {
-      "name": "promotedAdmin",
+      "name": "PromotedAdmin",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1083,23 +1077,23 @@ export type Staking = {
             "type": "pubkey"
           },
           {
-            "name": "newAdmin",
+            "name": "new_admin",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "stakeArgs",
+      "name": "StakeArgs",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vaultId",
+            "name": "vault_id",
             "type": "u32"
           },
           {
-            "name": "stakeId",
+            "name": "stake_id",
             "type": "u32"
           },
           {
@@ -1120,7 +1114,7 @@ export type Staking = {
       }
     },
     {
-      "name": "staked",
+      "name": "Staked",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1152,7 +1146,7 @@ export type Staking = {
       }
     },
     {
-      "name": "unpausedVault",
+      "name": "UnpausedVault",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1164,23 +1158,23 @@ export type Staking = {
       }
     },
     {
-      "name": "unstakeArgs",
+      "name": "UnstakeArgs",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vaultId",
+            "name": "vault_id",
             "type": "u32"
           },
           {
-            "name": "stakeId",
+            "name": "stake_id",
             "type": "u32"
           }
         ]
       }
     },
     {
-      "name": "unstaked",
+      "name": "Unstaked",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1212,24 +1206,24 @@ export type Staking = {
       }
     },
     {
-      "name": "updateVaultArgs",
+      "name": "UpdateVaultArgs",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vaultId",
+            "name": "vault_id",
             "type": "u32"
           }
         ]
       }
     },
     {
-      "name": "userConfigState",
+      "name": "UserConfigState",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "lastLockId",
+            "name": "last_lock_id",
             "type": "u32"
           },
           {
@@ -1242,7 +1236,7 @@ export type Staking = {
       }
     },
     {
-      "name": "vaultState",
+      "name": "VaultState",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1272,4 +1266,4 @@ export type Staking = {
       }
     }
   ]
-};
+}
