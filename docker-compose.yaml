@@ -17,3 +17,4 @@ services:
             - CLUSTER_URL=${CLUSTER_URL}
             - WS_URL=${WS_URL}
         command: ["node", "dist/main.js"]
+        restart: always
