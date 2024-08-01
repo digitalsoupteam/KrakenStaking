@@ -1,9 +1,18 @@
-# KRAKEN STAKING PROGRAM
+<p align="center"><img src="docs/img/logo.png" alt="logo" style="width:200px;" /></p>
 
+<h1 align="center">
+KRAKEN STAKING PROGRAM
+</h1>
+<p align="center">
 KRAKEN and derivatives staking program with airdrop rewards
+</p>
 
-### Docs
+### Documentation:
+ 
+#### 1. [api](docs/api.md)
 
-[api](docs/api.md)
-[deployments](docs/deployments.md)
-[solana_dev](docs/solana_dev.md)
+#### 2. [deployments](docs/deployments.md)
+
+#### 3. [solana_dev](docs/solana_dev.md)
+
+
