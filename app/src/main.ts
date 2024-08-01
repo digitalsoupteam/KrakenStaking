@@ -3,6 +3,9 @@ import { Indexer } from "./indexer";
 import * as api from "./api";
 import { fetchWithRetry } from "./utils";
 import { once } from "events";
+import fs from "fs";
+import path from "path";
+import https from "https";
 
 async function main() {
     const indexer = Indexer.from(
@@ -16,7 +19,17 @@ async function main() {
     await indexer.run();
     let app = await api.createApp(indexer);
     const PORT = process.env.PORT || 3000;
-    const server = app.listen(PORT, () => {
+
+    // Read SSL certificate and key files
+    const options = {
+        key: fs.readFileSync(path.join(__dirname, "..", "key.pem")),
+        cert: fs.readFileSync(path.join(__dirname, "..", "cert.pem")),
+    };
+
+    // Create HTTPS server
+    const server = https.createServer(options, app);
+
+    server.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
 
