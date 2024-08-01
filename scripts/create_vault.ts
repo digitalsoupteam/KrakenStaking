@@ -30,7 +30,7 @@ async function run(): Promise<void> {
     const periods = argv.periods;
     const admin = loadKeypair(process.env.ADMIN_KEY_PATH!);
     const mint = new PublicKey(argv.mint);
-    const ANCHOR_PROVIDER_URL = process.env.ANCHOR_PROVIDER_URL!;
+    const ANCHOR_PROVIDER_URL = process.env.CLUSTER_URL!;
 
     const provider = new anchor.AnchorProvider(
         new anchor.web3.Connection(ANCHOR_PROVIDER_URL),
